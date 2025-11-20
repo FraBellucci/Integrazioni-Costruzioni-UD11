@@ -529,10 +529,7 @@ function initGame() {
     shuffledScenarios = shuffleArray(scenarios);
     renderScenarios();
 }
-        function initGame() {
-            renderScenarios();
-        }
-
+       
         function renderScenarios() {
     const container = document.getElementById('scenariosList');
     container.innerHTML = shuffledScenarios.map((scenario, index) => `
