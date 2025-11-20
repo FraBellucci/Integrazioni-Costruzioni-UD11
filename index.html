@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UD11 - Valutazione Movimentazione Manuale dei Carichi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-top: 10px;
+        }
+
+        .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .info-box h2 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .current-date {
+            background: #edf2f7;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .scenario-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .scenario-card:hover {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .scenario-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+        .scenario-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .scenario-description {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 1em;
+        }
+
+        .answer-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .answer-btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: 2px solid #cbd5e0;
+            background: white;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .answer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .answer-btn.safe {
+            color: #2f855a;
+            border-color: #9ae6b4;
+        }
+
+        .answer-btn.safe:hover {
+            background: #f0fff4;
+            border-color: #48bb78;
+        }
+
+        .answer-btn.unsafe {
+            color: #c53030;
+            border-color: #fc8181;
+        }
+
+        .answer-btn.unsafe:hover {
+            background: #fff5f5;
+            border-color: #f56565;
+        }
+
+        .answer-btn.selected {
+            transform: scale(1.05);
+        }
+
+        .answer-btn.selected.safe {
+            background: #c6f6d5;
+            border-color: #48bb78;
+        }
+
+        .answer-btn.selected.unsafe {
+            background: #fed7d7;
+            border-color: #f56565;
+        }
+
+        .answer-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .scenario-feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scenario-feedback.show {
+            display: block;
+        }
+
+        .scenario-feedback.correct {
+            background: #c6f6d5;
+            border-left: 4px solid #48bb78;
+        }
+
+        .scenario-feedback.incorrect {
+            background: #fed7d7;
+            border-left: 4px solid #f56565;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .feedback-text {
+            line-height: 1.6;
+            color: #2d3748;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .final-feedback {
+            display: none;
+            margin-top: 40px;
+            padding: 40px;
+            border-radius: 15px;
+            animation: slideIn 0.5s;
+        }
+
+        .final-feedback.show {
+            display: block;
+        }
+
+        .final-feedback.excellent {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        }
+
+        .final-feedback.good {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+
+        .final-feedback.poor {
+            background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%);
+        }
+
+        .final-score {
+            font-size: 4em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .final-title {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .niosh-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .niosh-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .niosh-case {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .niosh-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .niosh-param {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .niosh-param label {
+            font-weight: bold;
+            color: #4a5568;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .niosh-param .value {
+            font-size: 1.2em;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .niosh-result {
+            background: #edf2f7;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .niosh-result h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .niosh-calculation {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid #667eea;
+        }
+
+        .risk-level {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .risk-level.safe {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .risk-level.moderate {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .risk-level.high {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .answer-buttons {
+                flex-direction: column;
+            }
+
+            .niosh-data {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏋️ UD11 - Movimentazione Manuale dei Carichi</h1>
+            <p class="subtitle">Valutazione rischio biomeccanico e posture corrette</p>
+        </header>
+
+        <div class="info-box">
+            <h2>📋 Scenario</h2>
+            <p>Sei il <strong>datore di lavoro</strong> e devi valutare se le seguenti situazioni di movimentazione manuale dei carichi sono <strong>conformi</strong> alla normativa (D.Lgs. 81/2008, Titolo VI) e alle <strong>buone prassi ergonomiche</strong>.</p>
+            <p style="margin-top: 10px;"><strong>Per ogni scenario</strong>, indica se la movimentazione è <strong>SICURA</strong> o <strong>NON SICURA</strong>.</p>
+        </div>
+
+        <div class="current-date">
+            📅 Data valutazione: Novembre 2025
+        </div>
+
+        <div id="scenariosList">
+            <!-- Scenari generati dinamicamente -->
+        </div>
+
+        <div class="submit-section">
+            <button class="submit-btn" id="submitBtn" disabled>✓ Verifica Valutazioni</button>
+            <p style="color: #718096; margin-top: 15px; font-size: 0.9em;">Completa tutti gli 8 scenari per procedere</p>
+        </div>
+
+        <div class="final-feedback" id="finalFeedback">
+            <!-- Feedback finale generato dinamicamente -->
+        </div>
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                id: 1,
+                title: "Sollevamento con altezza eccessiva",
+                description: "Un operaio solleva un sacco di cemento da 25 kg. Mantiene la schiena dritta, piega le ginocchia e tiene il carico vicino al corpo. Il sacco viene sollevato da terra e posizionato su un bancale a 1,2 metri di altezza.",
+                isSafe: false,
+                feedback: "❌ NON SICURO. Anche se la tecnica di sollevamento è corretta, l'altezza finale di 1,2 metri è eccessiva. Il limite raccomandato è 1,1 metri per evitare sovraccarico lombare durante il posizionamento in quota (ISO 11228-1)."
+            },
+            {
+                id: 2,
+                title: "Frequenza di sollevamento eccessiva",
+                description: "Un muratore solleva mattoni da 15 kg ciascuno con tecnica corretta: ginocchia piegate, schiena dritta, carico vicino al corpo. Esegue questa operazione per 6 ore consecutive, con una pausa di 15 minuti a metà turno.",
+                isSafe: false,
+                feedback: "❌ NON SICURO. Anche se la singola operazione è corretta, la frequenza e la durata (6 ore con solo 15 minuti di pausa) generano rischio cumulativo. Serve rotazione delle mansioni e pause più frequenti (metodo NIOSH: frequenza > 15 sollevamenti/ora per 6 ore = rischio elevato)."
+            },
+            {
+                id: 3,
+                title: "Torsione del busto sotto carico",
+                description: "Un operaio preleva tubi da un bancale laterale. Piega le ginocchia, mantiene la schiena dritta e solleva il carico. Dopo averlo sollevato, ruota di 90° verso destra per depositarlo sul carrello.",
+                isSafe: false,
+                feedback: "❌ NON SICURO. La torsione del busto mentre si tiene il carico è VIETATA. Aumenta drasticamente la pressione sui dischi intervertebrali. La procedura corretta prevede: sollevare → ruotare i PIEDI (non il busto) → depositare (D.Lgs. 81/2008, Allegato XXXIII)."
+            },
+            {
+                id: 4,
+                title: "Distanza eccessiva del carico",
+                description: "Un lavoratore solleva una scatola da 18 kg da terra. La scatola è posizionata a 60 cm di distanza dai suoi piedi. Mantiene schiena dritta e ginocchia piegate durante il sollevamento.",
+                isSafe: false,
+                feedback: "❌ NON SICURO. Anche con postura corretta, la distanza di 60 cm è eccessiva. Il carico deve essere a massimo 30 cm dal corpo per ridurre il momento flettente lombare. A 60 cm, il carico effettivo percepito dalla colonna è più del doppio (ISO 11228-1)."
+            },
+            {
+                id: 5,
+                title: "Sollevamento a due operatori coordinato",
+                description: "Due operai sollevano insieme una trave in legno da 35 kg. Si posizionano alle due estremità, comunicano verbalmente prima di sollevare, mantengono movimenti sincronizzati e depositano il carico su cavalletti a 1 metro di altezza.",
+                isSafe: true,
+                feedback: "✅ SICURO. Questa è la procedura corretta per carichi ingombranti o superiori a 30 kg. Il coordinamento verbale, la sincronizzazione e il posizionamento finale a 1 metro (< 1,1m) rispettano le buone prassi ergonomiche (Linee Guida ISO 11228-1)."
+            },
+            {
+                id: 6,
+                title: "Uso di ausilio meccanico",
+                description: "Un magazziniere utilizza un carrello manuale a due ruote per spostare una pila di scatole per un totale di 80 kg. Il carrello ha ruote gommate, il pavimento è liscio e privo di ostacoli, e il percorso è in piano.",
+                isSafe: true,
+                feedback: "✅ SICURO. L'uso di ausili meccanici (carrelli, transpallet) è la soluzione PRIORITARIA per carichi superiori a 25 kg secondo la gerarchia delle misure di prevenzione (D.Lgs. 81/2008, art. 168). Carrello idoneo + pavimento regolare = movimentazione sicura."
+            },
+            {
+                id: 7,
+                title: "Rotazione delle mansioni",
+                description: "Un operaio solleva carichi da 12 kg per 3 ore al mattino, con pausa di 15 minuti ogni ora. Nel pomeriggio alterna questa attività con montaggio componenti che non prevede sollevamenti, per altre 3 ore.",
+                isSafe: true,
+                feedback: "✅ SICURO. La rotazione delle mansioni è una misura organizzativa efficace. Il carico (12 kg) è sotto il limite, la frequenza è gestibile con pause regolari, e l'alternanza pomeridiana riduce l'esposizione cumulativa giornaliera (ISO 11228-1, principio di variabilità)."
+            },
+            {
+                id: 8,
+                title: "Sollevamento con presa ottimale",
+                description: "Un operatore solleva una cassetta da 20 kg dotata di maniglie ergonomiche laterali. Posiziona i piedi a larghezza spalle, piega le ginocchia, afferra saldamente le maniglie, mantiene la schiena dritta e solleva con movimento fluido. Deposita la cassetta su un piano a 80 cm senza torsioni.",
+                isSafe: true,
+                feedback: "✅ SICURO. Questa è la tecnica IDEALE: carico entro i limiti (20 kg < 25 kg), maniglie ergonomiche che facilitano la presa, postura corretta, altezza finale ottimale (80 cm tra 0,5 e 1,1m), assenza di torsioni. Conforme a tutte le linee guida ISO 11228."
+            }
+        ];
+
+       
+        // Fisher-Yates shuffle algorithm
+function shuffleArray(array) {
+    const shuffled = [...array]; // Crea copia per non modificare originale
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Shuffle scenarios all'inizio
+let shuffledScenarios = [];
+
+let userAnswers = {};
+
+function initGame() {
+    shuffledScenarios = shuffleArray(scenarios);
+    renderScenarios();
+}
+        function initGame() {
+            renderScenarios();
+        }
+
+        function renderScenarios() {
+    const container = document.getElementById('scenariosList');
+    container.innerHTML = shuffledScenarios.map((scenario, index) => `
+        <div class="scenario-card" data-scenario-id="${scenario.id}">
+            <div class="scenario-header">
+                <div class="scenario-number">${index + 1}</div>
+                <div class="scenario-title">${scenario.title}</div>
+            </div>
+            <div class="scenario-description">
+                ${scenario.description}
+            </div>
+            <div class="answer-buttons">
+                <button class="answer-btn safe" onclick="selectAnswer(${scenario.id}, true)">
+                    ✓ SICURO
+                </button>
+                <button class="answer-btn unsafe" onclick="selectAnswer(${scenario.id}, false)">
+                    ✗ NON SICURO
+                </button>
+            </div>
+            <div class="scenario-feedback" data-feedback-id="${scenario.id}">
+                <!-- Feedback mostrato dopo submit -->
+            </div>
+        </div>
+    `).join('');
+}
+
+        function selectAnswer(scenarioId, answer) {
+            userAnswers[scenarioId] = answer;
+            
+            // Update UI
+            const card = document.querySelector(`[data-scenario-id="${scenarioId}"]`);
+            const buttons = card.querySelectorAll('.answer-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('selected');
+                if ((btn.classList.contains('safe') && answer === true) ||
+                    (btn.classList.contains('unsafe') && answer === false)) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            checkCompletion();
+        }
+
+       function checkCompletion() {
+    const allAnswered = Object.keys(userAnswers).length === shuffledScenarios.length;
+    document.getElementById('submitBtn').disabled = !allAnswered;
+}
+
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            evaluateAnswers();
+            this.style.display = 'none';
+        });
+
+       function evaluateAnswers() {
+    let correct = 0;
+    let errors = [];
+
+    shuffledScenarios.forEach(scenario => {
+        const userAnswer = userAnswers[scenario.id];
+        const isCorrect = userAnswer === scenario.isSafe;
+        
+        if (isCorrect) {
+            correct++;
+        }
+
+        // Show feedback for each scenario
+        const feedbackDiv = document.querySelector(`[data-feedback-id="${scenario.id}"]`);
+        feedbackDiv.className = `scenario-feedback ${isCorrect ? 'correct' : 'incorrect'} show`;
+        feedbackDiv.innerHTML = `
+            <div class="feedback-title">
+                ${isCorrect ? '✅ CORRETTO' : '❌ ERRATO'}
+            </div>
+            <div class="feedback-text">
+                ${scenario.feedback}
+            </div>
+        `;
+
+        if (!isCorrect) {
+            errors.push({
+                scenario: scenario.id,
+                title: scenario.title,
+                userAnswer: userAnswer ? 'SICURO' : 'NON SICURO',
+                correctAnswer: scenario.isSafe ? 'SICURO' : 'NON SICURO'
+            });
+        }
+    });
+
+    displayFinalFeedback(correct, errors);
+}
+        function displayFinalFeedback(correct, errors) {
+            const feedback = document.getElementById('finalFeedback');
+            const percentage = (correct / scenarios.length) * 100;
+            
+            let feedbackClass = 'poor';
+            let feedbackTitle = '❌ Da Migliorare';
+            let feedbackMessage = 'È necessario rivedere i principi di ergonomia e le tecniche di movimentazione sicura.';
+            
+            if (percentage === 100) {
+                feedbackClass = 'excellent';
+                feedbackTitle = '🎉 ECCELLENTE!';
+                feedbackMessage = 'Hai dimostrato una perfetta conoscenza delle tecniche di movimentazione sicura e della valutazione del rischio biomeccanico!';
+            } else if (percentage >= 75) {
+                feedbackClass = 'good';
+                feedbackTitle = '✓ BUONO';
+                feedbackMessage = 'Buona comprensione generale, ma alcune situazioni richiedono maggiore attenzione.';
+            }
+            
+            feedback.className = `final-feedback ${feedbackClass} show`;
+            
+            let html = `
+                <div class="final-title">${feedbackTitle}</div>
+                <div class="final-score">${correct}/${scenarios.length}</div>
+                <p style="text-align: center; font-size: 1.2em; margin-bottom: 30px;">${feedbackMessage}</p>
+            `;
+
+            // Aggiunge sezione NIOSH
+            html += generateNIOSHSection();
+            
+            feedback.innerHTML = html;
+            feedback.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function generateNIOSHSection() {
+            return `
+                <div class="niosh-section">
+                    <div class="niosh-title">📊 BONUS: Mini-Calcolo NIOSH Semplificato</div>
+                    
+                    <div class="niosh-case">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">Caso Pratico:</h3>
+                        <p style="line-height: 1.6; color: #4a5568;">
+                            Un operaio solleva ripetutamente scatole da un bancale. 
+                            Vogliamo calcolare il <strong>Peso Limite Raccomandato (PLR)</strong> secondo il metodo NIOSH semplificato.
+                        </p>
+                    </div>
+
+                    <div class="niosh-data">
+                        <div class="niosh-param">
+                            <label>Peso Costante (PC)</label>
+                            <div class="value">23 kg</div>
+                        </div>
+                        <div class="niosh-param">
+                            <label>Altezza da terra (H)</label>
+                            <div class="value">0,75 m</div>
+                        </div>
+                        <div class="niosh-param">
+                            <label>Distanza verticale (V)</label>
+                            <div class="value">0,50 m</div>
+                        </div>
+                        <div class="niosh-param">
+                            <label>Distanza orizzontale (D)</label>
+                            <div class="value">0,30 m</div>
+                        </div>
+                        <div class="niosh-param">
+                            <label>Asimmetria (A)</label>
+                            <div class="value">0° (nessuna torsione)</div>
+                        </div>
+                        <div class="niosh-param">
+                            <label>Frequenza (F)</label>
+                            <div class="value">4 sollevamenti/minuto</div>
+                        </div>
+                    </div>
+
+                    <div class="niosh-result">
+                        <h3>Calcolo Semplificato:</h3>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Altezza (FH):</strong> 1,0 - |0,003 × (75 - 75)| = <strong>1,0</strong>
+                        </div>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Distanza Verticale (FV):</strong> 1,0 - 0,003 × 50 = <strong>0,85</strong>
+                        </div>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Distanza Orizzontale (FD):</strong> 25 / 30 = <strong>0,83</strong>
+                        </div>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Asimmetria (FA):</strong> 1,0 - 0,0032 × 0 = <strong>1,0</strong>
+                        </div>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Frequenza (FF):</strong> 0,85 (da tabella NIOSH per 4 soll/min, durata media)
+                        </div>
+                        
+                        <div class="niosh-calculation">
+                            <strong>Fattore Presa (FP):</strong> 0,90 (presa discreta)
+                        </div>
+
+                        <div class="niosh-calculation" style="background: #edf2f7; font-size: 1.1em; margin-top: 20px;">
+                            <strong>PLR = PC × FH × FV × FD × FA × FF × FP</strong><br>
+                            PLR = 23 × 1,0 × 0,85 × 0,83 × 1,0 × 0,85 × 0,90<br>
+                            <strong style="color: #667eea; font-size: 1.2em;">PLR = 12,4 kg</strong>
+                        </div>
+
+                        <div class="niosh-calculation" style="background: #fff5f5; border-left-color: #fc8181; margin-top: 15px;">
+                            <strong>Peso Effettivamente Sollevato:</strong> 18 kg<br>
+                            <strong>Indice di Sollevamento (IS):</strong> 18 / 12,4 = <strong style="color: #c53030;">1,45</strong>
+                        </div>
+
+                        <div class="risk-level moderate">
+                            ⚠️ RISCHIO MODERATO (IS > 1 e < 3)<br>
+                            <span style="font-size: 0.9em; font-weight: normal;">
+                                Necessarie misure organizzative: riduzione frequenza, rotazione mansioni, formazione specifica
+                            </span>
+                        </div>
+
+                        <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h4 style="color: #667eea; margin-bottom: 10px;">📚 Interpretazione:</h4>
+                            <ul style="line-height: 1.8; color: #4a5568;">
+                                <li><strong>IS ≤ 1:</strong> Rischio accettabile (verde)</li>
+                                <li><strong>IS > 1 e ≤ 3:</strong> Rischio moderato (giallo) - serve sorveglianza sanitaria</li>
+                                <li><strong>IS > 3:</strong> Rischio elevato (rosso) - interventi immediati obbligatori</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inizializza al caricamento
+        initGame();
+    </script>
+</body>
+</html>
